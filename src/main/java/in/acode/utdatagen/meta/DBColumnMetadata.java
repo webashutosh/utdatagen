@@ -1,6 +1,7 @@
 package in.acode.utdatagen.meta;
 
 public class DBColumnMetadata {
+
     private String columnName;
     private int dataType;
     private String dataTypeName;

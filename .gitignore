@@ -14,5 +14,6 @@
 
 #intelliJ
 .idea/
+*.iml
 
 target/
