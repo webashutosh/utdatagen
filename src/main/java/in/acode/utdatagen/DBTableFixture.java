@@ -23,7 +23,7 @@ public class DBTableFixture {
 
     private String tableName;
     private JdbcTemplate jdbcTemplate;
-    private List<DBColumnMetadata> columns;
+    private volatile List<DBColumnMetadata> columns;
 
     private DBTableFixture(String tableName, JdbcTemplate jdbcTemplate) {
         this.tableName = tableName;
@@ -91,33 +91,40 @@ public class DBTableFixture {
     }
 
     /**
-     * Fetches column metadata from the DB and caches it for use by other methods
+     * Fetches column metadata from the DB and caches it for use by other methods and threads
      */
     protected void fillInternalStateWithDBMetadata() {
         if (this.columns != null && this.columns.size() > 0) return;
 
-        try {
-            DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
-            ResultSet columns = metaData.getColumns(null, null, this.tableName, null);
+        synchronized (this) {
+            if (this.columns != null && this.columns.size() > 0) return;
 
-            while(columns.next()) {
-                DBColumnMetadata dbColumnMetadata = DBColumnMetadataBuilder.getInstance()
-                        .withColumnName(columns.getString("COLUMN_NAME"))
-                        .withDataType(columns.getInt("DATA_TYPE"))
-                        .withDataTypeName(columns.getString("TYPE_NAME"))
-                        .withPrecision(columns.getInt("COLUMN_SIZE"))
-                        .withScale(columns.getInt("DECIMAL_DIGITS"))
-                        .withIsNullable(columns.getInt("NULLABLE") == 1)
-                        .withHasDefaultValue(!StringUtils.isEmpty(columns.getString("COLUMN_DEF")))
-                        .withMaxSize(columns.getInt("CHAR_OCTET_LENGTH"))
-                        .withOrdinalPos(columns.getInt("ORDINAL_POSITION"))
-                        .withIsAutoInc(columns.getString("IS_AUTOINCREMENT").equals("YES"))
-                        .withIsGenerated(columns.getString("IS_GENERATEDCOLUMN").equals("YES"))
-                        .createDBColumnMetadata();
-                this.columns.add(dbColumnMetadata);
+            try {
+                DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
+                ResultSet columns = metaData.getColumns(null, null, this.tableName, null);
+                List<DBColumnMetadata> tmpColumnsList = new ArrayList<>();
+
+                while (columns.next()) {
+                    DBColumnMetadata dbColumnMetadata = DBColumnMetadataBuilder.getInstance()
+                            .withColumnName(columns.getString("COLUMN_NAME"))
+                            .withDataType(columns.getInt("DATA_TYPE"))
+                            .withDataTypeName(columns.getString("TYPE_NAME"))
+                            .withPrecision(columns.getInt("COLUMN_SIZE"))
+                            .withScale(columns.getInt("DECIMAL_DIGITS"))
+                            .withIsNullable(columns.getInt("NULLABLE") == 1)
+                            .withHasDefaultValue(!StringUtils.isEmpty(columns.getString("COLUMN_DEF")))
+                            .withMaxSize(columns.getInt("CHAR_OCTET_LENGTH"))
+                            .withOrdinalPos(columns.getInt("ORDINAL_POSITION"))
+                            .withIsAutoInc(columns.getString("IS_AUTOINCREMENT").equals("YES"))
+                            .withIsGenerated(columns.getString("IS_GENERATEDCOLUMN").equals("YES"))
+                            .createDBColumnMetadata();
+                    tmpColumnsList.add(dbColumnMetadata);
+                }
+
+                this.columns = tmpColumnsList;
+            } catch (SQLException e) {
+                throw new DataRetrievalFailureException("Failed to fetch DB metadata", e);
             }
-        } catch (SQLException e) {
-            throw new DataRetrievalFailureException("Failed to fetch DB metadata", e);
         }
     }
 
