@@ -5,7 +5,16 @@ import java.util.UUID;
 
 public class ScratchPad {
     public static void main(String[] args) {
-        //String substring = UUID.randomUUID().toString().substring(0, 200 % 128);
-        System.out.println(new BigDecimal("1.2"));
+        m("a");
+    }
+
+    static void m(String... s) {
+        int length = s.length;
+        System.out.println(length);
+    }
+
+    static void m(String s) {
+
+        System.out.println(s);
     }
 }

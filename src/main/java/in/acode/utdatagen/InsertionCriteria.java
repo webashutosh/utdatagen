@@ -1,5 +1,7 @@
 package in.acode.utdatagen;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -67,14 +69,56 @@ public class InsertionCriteria {
         return this;
     }
 
+    public InsertionCriteria withCondition(String columnName, String... value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> (value.length == 0 ? null : value[idx % value.length]);
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
     public InsertionCriteria withCondition(String columnName, int value) {
         BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> value;
         columnValueSuppliers.put(columnName, biFunction);
         return this;
     }
 
+    public InsertionCriteria withCondition(String columnName, int... value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> (value.length == 0 ? null : value[idx % value.length]);
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
     public InsertionCriteria withCondition(String columnName, float value) {
         BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> value;
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
+    public InsertionCriteria withCondition(String columnName, float... value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> (value.length == 0 ? null : value[idx % value.length]);
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
+    public InsertionCriteria withCondition(String columnName, LocalDate value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> value;
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
+    public InsertionCriteria withCondition(String columnName, LocalDate... value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> (value.length == 0 ? null : value[idx % value.length]);
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
+    public InsertionCriteria withCondition(String columnName, LocalDateTime value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> value;
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
+    public InsertionCriteria withCondition(String columnName, LocalDateTime... value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> (value.length == 0 ? null : value[idx % value.length]);
         columnValueSuppliers.put(columnName, biFunction);
         return this;
     }

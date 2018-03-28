@@ -10,7 +10,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 
 @Configuration
-public class MySQLDataSources {
+public class MySQLDataSource {
 
     @Value("${mysql.db.url}")
     private String url;
