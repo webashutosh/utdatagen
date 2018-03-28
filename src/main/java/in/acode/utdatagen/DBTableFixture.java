@@ -2,6 +2,7 @@ package in.acode.utdatagen;
 
 import in.acode.utdatagen.meta.DBColumnMetadata;
 import in.acode.utdatagen.meta.DBColumnMetadataBuilder;
+import in.acode.utdatagen.utils.JdbcTypeUtils;
 import in.acode.utdatagen.utils.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,12 +91,13 @@ public class DBTableFixture {
     }
 
     public void insertRows(InsertionCriteria criteria) {
+        fillInternalStateWithDBMetadata();
+
         int numOfColumnsToSet = (int)this.columns.stream().filter(c -> c.isValueEditable()).count();
         if (numOfColumnsToSet == 0) {
             throw new IllegalStateException("The table [" + this.tableName + "] does not contain any editable columns!");
         }
 
-        fillInternalStateWithDBMetadata();
         String SQL = getInsertStatement();
         List<Object[]> listOfSQLArgs = getInsertionArguments(criteria, numOfColumnsToSet);
 
@@ -118,8 +120,8 @@ public class DBTableFixture {
         insertPartBuilder.setLength(insertPartBuilder.length() - 2);
         insertPartBuilder = insertPartBuilder.append(") ");
 
-        valuesPartBuilder.setLength(insertPartBuilder.length() - 2);
-        valuesPartBuilder = insertPartBuilder.append(") ");
+        valuesPartBuilder.setLength(valuesPartBuilder.length() - 2);
+        valuesPartBuilder = valuesPartBuilder.append(") ");
 
         return insertPartBuilder.toString() + valuesPartBuilder.toString();
     }
@@ -130,6 +132,7 @@ public class DBTableFixture {
 
         for (int i = 0; i < criteria.getNumOfRows(); i++) {
             Object[] sqlArgs = new Object[numOfColumnsToSet];
+            int colIdx = 0;
 
             for (int j = 0; j < this.columns.size(); j++) {
                 DBColumnMetadata column = this.columns.get(j);
@@ -144,7 +147,7 @@ public class DBTableFixture {
                 if (columnValueSupplier != null) {
                     value = columnValueSupplier.apply(i, prevValues.get(column.getColumnName()));
                 }
-                sqlArgs[j] = value;
+                sqlArgs[colIdx++] = JdbcTypeUtils.toSQLType(value);
                 prevValues.put(column.getColumnName(), value);
             }
 

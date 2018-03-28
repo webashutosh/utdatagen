@@ -73,6 +73,12 @@ public class InsertionCriteria {
         return this;
     }
 
+    public InsertionCriteria withCondition(String columnName, float value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> value;
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
     public BiFunction<Integer, Object, Object> getSupplierForColumn(String columnName) {
         return this.columnValueSuppliers.get(columnName);
     }
