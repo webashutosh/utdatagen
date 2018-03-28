@@ -16,7 +16,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
+/**
+ * Central class of the framework which is to be used by the clients of this library
+ * An instance of this class represents a fixture connected to a specific database table
+ * Once created, the object can be used to insert/select/delete rows
+ */
 public class DBTableFixture {
 
     private static final Log LOG = LogFactory.getLog(DBTableFixture.class);
@@ -33,13 +39,6 @@ public class DBTableFixture {
 
     public static DBTableFixture getInstance(String tableName, JdbcTemplate jdbcTemplate) {
         return new DBTableFixture(tableName, jdbcTemplate);
-    }
-
-    public int truncateTable() {
-        LOG.info("Started truncating table [" + this.tableName + "]");
-        int rowCount = jdbcTemplate.update("DELETE FROM " + this.tableName);
-        LOG.info("Finished truncating table [" + this.tableName + "]");
-        return rowCount;
     }
 
     /**
@@ -88,6 +87,77 @@ public class DBTableFixture {
         }
 
         return sqlBuilder.toString();
+    }
+
+    public void insertRows(InsertionCriteria criteria) {
+        int numOfColumnsToSet = (int)this.columns.stream().filter(c -> c.isValueEditable()).count();
+        if (numOfColumnsToSet == 0) {
+            throw new IllegalStateException("The table [" + this.tableName + "] does not contain any editable columns!");
+        }
+
+        fillInternalStateWithDBMetadata();
+        String SQL = getInsertStatement();
+        List<Object[]> listOfSQLArgs = getInsertionArguments(criteria, numOfColumnsToSet);
+
+        LOG.info("Starting row insertion ...");
+        jdbcTemplate.batchUpdate(SQL, listOfSQLArgs);
+        LOG.info("Finished row insertion ...");
+    }
+
+    private String getInsertStatement() {
+        StringBuilder insertPartBuilder = new StringBuilder("INSERT INTO " + this.tableName + " (");
+        StringBuilder valuesPartBuilder = new StringBuilder("VALUES (");
+
+        for (DBColumnMetadata column : this.columns) {
+            if (column.isValueEditable()) {
+                insertPartBuilder = insertPartBuilder.append(column.getColumnName()).append(", ");
+                valuesPartBuilder = valuesPartBuilder.append("?, ");
+            }
+        }
+
+        insertPartBuilder.setLength(insertPartBuilder.length() - 2);
+        insertPartBuilder = insertPartBuilder.append(") ");
+
+        valuesPartBuilder.setLength(insertPartBuilder.length() - 2);
+        valuesPartBuilder = insertPartBuilder.append(") ");
+
+        return insertPartBuilder.toString() + valuesPartBuilder.toString();
+    }
+
+    private List<Object[]> getInsertionArguments(InsertionCriteria criteria, int numOfColumnsToSet) {
+        List<Object[]> listOfSQLArgs = new ArrayList<>();
+        HashMap<String, Object> prevValues = new HashMap<>();
+
+        for (int i = 0; i < criteria.getNumOfRows(); i++) {
+            Object[] sqlArgs = new Object[numOfColumnsToSet];
+
+            for (int j = 0; j < this.columns.size(); j++) {
+                DBColumnMetadata column = this.columns.get(j);
+                if (!column.isValueEditable()) continue;
+
+                BiFunction<Integer, Object, Object> columnValueSupplier = criteria.getSupplierForColumn(column.getColumnName());
+                if (columnValueSupplier == null && !column.isNullable()) {
+                    columnValueSupplier = column.getDefaultValueSupplier();
+                }
+
+                Object value = null;
+                if (columnValueSupplier != null) {
+                    value = columnValueSupplier.apply(i, prevValues.get(column.getColumnName()));
+                }
+                sqlArgs[j] = value;
+                prevValues.put(column.getColumnName(), value);
+            }
+
+            listOfSQLArgs.add(sqlArgs);
+        }
+        return listOfSQLArgs;
+    }
+
+    public int truncateTable() {
+        LOG.info("Started truncating table [" + this.tableName + "]");
+        int rowCount = jdbcTemplate.update("DELETE FROM " + this.tableName);
+        LOG.info("Finished truncating table [" + this.tableName + "]");
+        return rowCount;
     }
 
     /**

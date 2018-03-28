@@ -47,6 +47,7 @@ public class DBColumnMetadata {
         DEFAULT_VALUE_SUPPLIERS.put(JDBCType.SMALLINT, (idx, prevValue) -> ThreadLocalRandom.current().nextInt(0, Short.MAX_VALUE));
         DEFAULT_VALUE_SUPPLIERS.put(JDBCType.TINYINT, (idx, prevValue) -> ThreadLocalRandom.current().nextInt(0, Byte.MAX_VALUE));
         DEFAULT_VALUE_SUPPLIERS.put(JDBCType.BIT, (idx, prevValue) -> ThreadLocalRandom.current().nextInt(0, 2));
+        DEFAULT_VALUE_SUPPLIERS.put(JDBCType.BOOLEAN, (idx, prevValue) -> ThreadLocalRandom.current().nextBoolean());
         DEFAULT_VALUE_SUPPLIERS.put(JDBCType.REAL, (idx, prevValue) -> ThreadLocalRandom.current().nextFloat());
         DEFAULT_VALUE_SUPPLIERS.put(JDBCType.DOUBLE, (idx, prevValue) -> ThreadLocalRandom.current().nextDouble());
         DEFAULT_VALUE_SUPPLIERS.put(JDBCType.TIMESTAMP_WITH_TIMEZONE, (idx, prevValue) -> Timestamp.valueOf(LocalDateTime.now()));
@@ -64,6 +65,8 @@ public class DBColumnMetadata {
         DEFAULT_VALUE_SUPPLIER_GENERATORS.put(JDBCType.CHAR, boundedSizeStringSupplierGenerator);
         DEFAULT_VALUE_SUPPLIER_GENERATORS.put(JDBCType.VARCHAR, boundedSizeStringSupplierGenerator);
         DEFAULT_VALUE_SUPPLIER_GENERATORS.put(JDBCType.LONGNVARCHAR, boundedSizeStringSupplierGenerator);
+        DEFAULT_VALUE_SUPPLIER_GENERATORS.put(JDBCType.NCHAR, boundedSizeStringSupplierGenerator);
+        DEFAULT_VALUE_SUPPLIER_GENERATORS.put(JDBCType.NVARCHAR, boundedSizeStringSupplierGenerator);
 
         CHARACTER_TYPES = new HashSet<>(Arrays.asList(JDBCType.CHAR, JDBCType.VARCHAR, JDBCType.LONGNVARCHAR));
 
@@ -148,10 +151,14 @@ public class DBColumnMetadata {
         return isGenerated;
     }
 
+    public boolean isValueEditable() {
+        return !(this.isAutoInc || this.isGenerated);
+    }
+
     /**
      * Gets the default value supplier based on the column's data-type
      */
-    public BiFunction<Integer, Object, Object> getDefaulyValueSupplier() {
+    public BiFunction<Integer, Object, Object> getDefaultValueSupplier() {
         JDBCType jdbcType = JDBCType.valueOf(this.dataType);
 
         BiFunction<Integer, Object, Object> supplier = DEFAULT_VALUE_SUPPLIERS.get(jdbcType);

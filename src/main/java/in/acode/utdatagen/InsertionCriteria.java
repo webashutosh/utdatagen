@@ -27,7 +27,7 @@ public class InsertionCriteria {
     private HashMap<String, BiFunction<Integer, Object, Object>> columnValueSuppliers;
 
     public InsertionCriteria(int numOfRows) {
-        this.numOfRows = numOfRows;
+        this.forNumberOfRows(numOfRows);
         columnValueSuppliers = new HashMap<>();
     }
 
@@ -36,6 +36,10 @@ public class InsertionCriteria {
     }
 
     public InsertionCriteria forNumberOfRows(int numOfRows) {
+        if (numOfRows <= 0) {
+            throw new IllegalArgumentException("Number of rows must be more than 0");
+        }
+
         this.numOfRows = numOfRows;
         return this;
     }
