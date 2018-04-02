@@ -83,6 +83,7 @@ public class DBTableFixture {
         sqlBuilder.append("SELECT * FROM " + tableName);
 
         if (orderByClause != null && orderByClause.length > 0) {
+            sqlBuilder.append(" ORDER BY ");
             Arrays.stream(orderByClause).forEach(obc -> sqlBuilder.append(obc).append(", "));
             sqlBuilder.delete(sqlBuilder.length() - 2, sqlBuilder.length());
         }
