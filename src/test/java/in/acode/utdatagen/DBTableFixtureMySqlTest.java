@@ -77,12 +77,12 @@ public class DBTableFixtureMySqlTest {
         //Verify first row
         Map<String, Object> firstRow = allRows.get(0);
         assertEquals("test_string2", firstRow.get("varchar_column"));
-        assertEquals(new BigDecimal(10.02).setScale(2, RoundingMode.CEILING), firstRow.get("numeric_column"));
+        assertEquals(toScaleOfTwo(10.02f), firstRow.get("numeric_column"));
 
         //Verify second row
         Map<String, Object> secondRow = allRows.get(1);
         assertEquals("test_string1", secondRow.get("varchar_column"));
-        assertEquals(new BigDecimal(10.02).setScale(2, RoundingMode.CEILING), secondRow.get("numeric_column"));
+        assertEquals(toScaleOfTwo(10.02f), secondRow.get("numeric_column"));
     }
 
     @Test
@@ -98,27 +98,23 @@ public class DBTableFixtureMySqlTest {
         testTableFixture.insertRows(insertionCriteria);
 
         //Fetch them with this order - varchar_column DESC
-        List<TestTableModel> allRows = testTableFixture.getAllRows(getTestTableRowMapper(), "varchar_column DESC");
+        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), "varchar_column DESC");
         assertEquals(2, allRows.size());
 
         //Verify first row
         TestTableModel firstRow = allRows.get(0);
         assertEquals("test_string2", firstRow.getVarcharColumn());
-        assertEquals(new BigDecimal(10.02).setScale(2, RoundingMode.CEILING), firstRow.getNumericColumn());
+        assertEquals(toScaleOfTwo(10.02f), firstRow.getNumericColumn());
 
         //Verify second row
         TestTableModel secondRow = allRows.get(0);
         assertEquals("test_string2", secondRow.getVarcharColumn());
-        assertEquals(new BigDecimal(10.02).setScale(2, RoundingMode.CEILING), secondRow.getNumericColumn());
+        assertEquals(toScaleOfTwo(10.02f), secondRow.getNumericColumn());
     }
 
-    private RowMapper<TestTableModel> getTestTableRowMapper () {
-        return (rs, idx) -> {
-            TestTableModel model = new TestTableModel();
-            model.setVarcharColumn(rs.getString("varchar_column"));
-            model.setNumericColumn(rs.getBigDecimal("numeric_column").setScale(2, RoundingMode.CEILING));
-            return model;
-        };
+    private BigDecimal toScaleOfTwo(float num) {
+        return new BigDecimal(num).setScale(2, RoundingMode.FLOOR);
     }
+
 
 }
