@@ -17,3 +17,6 @@
 *.iml
 
 target/
+
+.mvn/
+mvnw*
