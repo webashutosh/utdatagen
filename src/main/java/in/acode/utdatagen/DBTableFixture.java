@@ -140,8 +140,10 @@ public class DBTableFixture {
                 if (!column.isValueEditable()) continue;
 
                 BiFunction<Integer, Object, Object> columnValueSupplier = criteria.getSupplierForColumn(column.getColumnName());
-                if (columnValueSupplier == null && !column.isNullable()) {
-                    columnValueSupplier = column.getDefaultValueSupplier();
+                if (columnValueSupplier == null) {
+                    if (!column.isNullable() || criteria.isInsertDefaultsForNullableColumns()) {
+                        columnValueSupplier = column.getDefaultValueSupplier();
+                    }
                 }
 
                 Object value = null;

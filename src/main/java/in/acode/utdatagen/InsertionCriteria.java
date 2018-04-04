@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 public class InsertionCriteria {
 
     private int numOfRows;
+    private boolean insertDefaultsForNullableColumns;
 
     /**
      * A map of column-names and their value-suppliers
@@ -30,6 +31,7 @@ public class InsertionCriteria {
 
     public InsertionCriteria(int numOfRows) {
         this.forNumberOfRows(numOfRows);
+        this.insertDefaultsForNullableColumns = false;
         columnValueSuppliers = new HashMap<>();
     }
 
@@ -44,6 +46,15 @@ public class InsertionCriteria {
 
         this.numOfRows = numOfRows;
         return this;
+    }
+
+    public InsertionCriteria insertDefaultsForNullableColumns(boolean insert) {
+        this.insertDefaultsForNullableColumns = insert;
+        return this;
+    }
+
+    public boolean isInsertDefaultsForNullableColumns() {
+        return insertDefaultsForNullableColumns;
     }
 
     public InsertionCriteria withCondition(String columnName, BiFunction<Integer, Object, Object> valueSupplier) {
@@ -94,6 +105,18 @@ public class InsertionCriteria {
     }
 
     public InsertionCriteria withCondition(String columnName, float... value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> (value.length == 0 ? null : value[idx % value.length]);
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
+    public InsertionCriteria withCondition(String columnName, boolean value) {
+        BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> value;
+        columnValueSuppliers.put(columnName, biFunction);
+        return this;
+    }
+
+    public InsertionCriteria withCondition(String columnName, boolean... value) {
         BiFunction<Integer, Object, Object> biFunction = (idx, prevVal) -> (value.length == 0 ? null : value[idx % value.length]);
         columnValueSuppliers.put(columnName, biFunction);
         return this;
