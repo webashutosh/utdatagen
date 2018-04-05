@@ -1,12 +1,14 @@
 package in.acode.utdatagen;
 
 import in.acode.utdatagen.datasources.MySQLDataSource;
+import in.acode.utdatagen.meta.DBColumnMetadata;
 import in.acode.utdatagen.models.TestTableModel;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Comparator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,10 +116,6 @@ public class DBTableFixtureMySqlTest {
         assertEquals(toScaleOfTwo(10.02f), secondRow.getNumericColumn());
     }
 
-    private BigDecimal toScaleOfTwo(float num) {
-        return new BigDecimal(num).setScale(2, RoundingMode.FLOOR);
-    }
-
     @Test
     public void shouldInsertRowsWithValuesOfAllMajorDataTypes() {
         LocalDate today = LocalDate.now();
@@ -143,7 +141,7 @@ public class DBTableFixtureMySqlTest {
         //Verify the contents of the first row
         TestTableModel firstRow = allRows.get(0);
         assertEquals("text1", firstRow.getVarcharColumn());
-        assertEquals(new BigDecimal(10.5).setScale(2, RoundingMode.HALF_DOWN), firstRow.getNumericColumn());
+        assertEquals(toScaleOfTwo(10.5f), firstRow.getNumericColumn());
         assertTrue(Timestamp.valueOf(today.atStartOfDay()).equals(firstRow.getTimestampColumn()));
         assertTrue(Date.valueOf(today).equals(firstRow.getDateColumn()));
         assertEquals(10, (int)firstRow.getIntColumn());
@@ -154,7 +152,7 @@ public class DBTableFixtureMySqlTest {
         //Verify the contents of the second row
         TestTableModel secondRow = allRows.get(1);
         assertEquals("text2", secondRow.getVarcharColumn());
-        assertEquals(new BigDecimal(20.2).setScale(2, RoundingMode.HALF_DOWN), secondRow.getNumericColumn());
+        assertEquals(toScaleOfTwo(20.2f), secondRow.getNumericColumn());
         assertTrue(Timestamp.valueOf(today.atStartOfDay().plusYears(1)).equals(secondRow.getTimestampColumn()));
         assertTrue(Date.valueOf(today.plusDays(10)).equals(secondRow.getDateColumn()));
         assertEquals(50, (int)secondRow.getIntColumn());
@@ -210,5 +208,75 @@ public class DBTableFixtureMySqlTest {
         assertTrue(firstRow.getCharColumn().length() > 0);
         assertNotNull(firstRow.isBooleanColumn());
         assertNotNull(firstRow.getFloatColumn());
+    }
+
+    @Test
+    public void shouldTruncateTable() {
+        //Create a row
+        InsertionCriteria insertionCriteria = InsertionCriteria.newInstance()
+            .forNumberOfRows(1);
+        testTableFixture.insertRows(insertionCriteria);
+
+        //Assert that table does have rows
+        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), null);
+        assertTrue(allRows.size() > 0);
+
+        //Truncate
+        testTableFixture.truncateTable();
+
+        //Assert that table is empty
+        allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), null);
+        assertTrue(allRows.size() == 0);
+    }
+
+    @Test
+    public void shouldFetchCorrectDbMetadata() {
+        testTableFixture.fillInternalStateWithDBMetadata();
+        List<DBColumnMetadata> columns = testTableFixture.getColumns();
+
+        assertEquals(9, columns.size());
+
+        //Sort by ordinal position and assert meta-data values for each column
+        columns.sort(Comparator.comparingInt(DBColumnMetadata::getOrdinalPos));
+
+        verifyColumnMetadata(columns.get(0), "id", 4, "INT", 10, 0, false, false, 0, 1, true, false);
+        verifyColumnMetadata(columns.get(1), "varchar_column", 12, "VARCHAR", 45, 0, true, false, 45, 2, false, false);
+        verifyColumnMetadata(columns.get(2), "numeric_column", 3, "DECIMAL", 5, 2, true, false, 0, 3, false, false);
+        verifyColumnMetadata(columns.get(3), "timestamp_column", 93, "DATETIME", 19, 0, true, false, 0, 4, false, false);
+        verifyColumnMetadata(columns.get(4), "date_column", 91, "DATE", 10, 0, true, false, 0, 5, false, false);
+        verifyColumnMetadata(columns.get(5), "int_column", 4, "INT", 10, 0, true, false, 0, 6, false, false);
+        verifyColumnMetadata(columns.get(6), "char_column", 1, "CHAR", 20, 0, true, false, 20, 7, false, false);
+        verifyColumnMetadata(columns.get(7), "boolean_column", -6, "TINYINT", 3, 0, true, false, 0, 8, false, false);
+        verifyColumnMetadata(columns.get(8), "float_column", 7, "FLOAT", 12, 0, true, false, 0, 9, false, false);
+    }
+
+    private void verifyColumnMetadata(DBColumnMetadata metadata,
+        String columnName,
+        int dataType,
+        String datatypeName,
+        int precision,
+        int scale,
+        boolean isNullable,
+        boolean hasDefaultValue,
+        int maxSize,
+        int ordinalPosition,
+        boolean isAutoInc,
+        boolean isGenerated) {
+
+        assertEquals(columnName, metadata.getColumnName());
+        assertEquals(dataType, metadata.getDataType());
+        assertEquals(datatypeName, metadata.getDataTypeName());
+        assertEquals(precision, metadata.getPrecision());
+        assertEquals(scale, metadata.getScale());
+        assertEquals(isNullable, metadata.isNullable());
+        assertEquals(hasDefaultValue, metadata.isHasDefaultValue());
+        assertEquals(maxSize, metadata.getMaxSize());
+        assertEquals(ordinalPosition, metadata.getOrdinalPos());
+        assertEquals(isAutoInc, metadata.isAutoInc());
+        assertEquals(isGenerated, metadata.isGenerated());
+    }
+
+    private BigDecimal toScaleOfTwo(float num) {
+        return new BigDecimal(num).setScale(2, RoundingMode.HALF_DOWN);
     }
 }

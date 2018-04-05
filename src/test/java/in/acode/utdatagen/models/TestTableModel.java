@@ -110,7 +110,11 @@ public class TestTableModel {
       }
 
       if (JdbcUtils.hasColumn(rs, "boolean_column")) {
-        model.setBooleanColumn((Boolean) rs.getObject("boolean_column"));
+        if (rs.getObject("boolean_column") instanceof Integer) {
+          model.setBooleanColumn((Integer) rs.getObject("boolean_column") == 1 ? Boolean.TRUE : Boolean.FALSE);
+        } else {
+          model.setBooleanColumn((Boolean) rs.getObject("boolean_column"));
+        }
       }
 
       if (JdbcUtils.hasColumn(rs, "float_column")) {

@@ -42,6 +42,10 @@ public class DBTableFixture {
         return new DBTableFixture(tableName, jdbcTemplate);
     }
 
+    public List<DBColumnMetadata> getColumns() {
+        return columns;
+    }
+
     /**
      * Fetches all rows and returns them in a list
      * Each item in the list is a Map, with column-name as the key and corresponding data as the value
@@ -167,7 +171,9 @@ public class DBTableFixture {
     }
 
     /**
-     * Fetches column metadata from the DB and caches it for use by other methods and threads
+     * Fetches column metadata from the DB and caches it for use by other methods
+     * Uses double-checking algorithm to make sure that concurrent attempts to fill metadata
+     * only load it once
      */
     protected void fillInternalStateWithDBMetadata() {
         if (this.columns != null && this.columns.size() > 0) return;
