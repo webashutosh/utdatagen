@@ -1,5 +1,6 @@
 package in.acode.utdatagen.suppliers;
 
+import in.acode.utdatagen.utils.Validator;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -9,7 +10,7 @@ public class IntSuppliers {
      * Returns a supplier, which in-turn would supply a random value bounded by the specified upper and lower values
      */
     public static Supplier<Integer> random(int lowerBoundIncl, int upperBoundIncl) {
-        checkBounds(lowerBoundIncl, upperBoundIncl);
+        Validator.validateBounds(lowerBoundIncl, upperBoundIncl);
         Random random = new Random();
 
         return () -> random.nextInt(upperBoundIncl - lowerBoundIncl + 1) + lowerBoundIncl;
@@ -20,7 +21,7 @@ public class IntSuppliers {
      * The value would be bounded by the specified upper and lower values
      */
     public static Supplier<Integer> multipleOf(int multipleOf, int lowerBoundIncl, int upperBoundIncl) {
-        checkBounds(lowerBoundIncl, upperBoundIncl);
+        Validator.validateBounds(lowerBoundIncl, upperBoundIncl);
         Random random = new Random();
 
         return () -> {
@@ -40,12 +41,6 @@ public class IntSuppliers {
 
             return num;
         };
-    }
-
-    private static void checkBounds(int lowerBoundIncl, int upperBoundIncl) {
-        if (upperBoundIncl < lowerBoundIncl) {
-            throw new IllegalArgumentException("Lower-bound must be >= upper-bound!");
-        }
     }
 
 }

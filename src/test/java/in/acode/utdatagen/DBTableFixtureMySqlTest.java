@@ -170,7 +170,7 @@ public class DBTableFixtureMySqlTest {
         testTableFixture.truncateTable();
         testTableFixture.insertRows(insertionCriteria);
 
-        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), null);
+        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), "");
         assertEquals(1, allRows.size());
 
         //Verify the contents of the first row
@@ -195,7 +195,7 @@ public class DBTableFixtureMySqlTest {
         testTableFixture.truncateTable();
         testTableFixture.insertRows(insertionCriteria);
 
-        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), null);
+        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), "");
         assertEquals(1, allRows.size());
 
         //Verify the contents of the first row
@@ -218,14 +218,14 @@ public class DBTableFixtureMySqlTest {
         testTableFixture.insertRows(insertionCriteria);
 
         //Assert that table does have rows
-        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), null);
+        List<TestTableModel> allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), "");
         assertTrue(allRows.size() > 0);
 
         //Truncate
         testTableFixture.truncateTable();
 
         //Assert that table is empty
-        allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), null);
+        allRows = testTableFixture.getAllRows(TestTableModel.getAllFieldsRowMapper(), "");
         assertTrue(allRows.size() == 0);
     }
 

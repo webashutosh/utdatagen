@@ -1,16 +1,14 @@
 package in.acode.utdatagen.suppliers;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import java.time.LocalDate;
 import java.util.function.Supplier;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class DateSuppliersTest {
 
     @Test
-    public void shouldSupplyRandomNumberWithinBounds() {
+    public void shouldSupplyRandomDateWithinBounds() {
         LocalDate lowerBound = LocalDate.now();
         LocalDate upperBound = LocalDate.now().plusDays(10);
 
