@@ -1,5 +1,10 @@
 package in.acode.utdatagen;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import in.acode.utdatagen.datasources.MySQLDataSource;
 import in.acode.utdatagen.meta.DBColumnMetadata;
 import in.acode.utdatagen.models.TestTableModel;
@@ -9,6 +14,8 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,9 +26,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import java.util.List;
-import java.util.Map;
-import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
@@ -163,7 +167,7 @@ public class DBTableFixtureMySqlTest {
 
     @Test
     public void shouldNotInsertValuesForNullableColumnsByDefault() {
-        //Insert 1 rows without specifying values of any column (all columns in the table are nullable)
+        //Insert a row without specifying values of any column (all columns in the table are nullable)
         InsertionCriteria insertionCriteria = InsertionCriteria.newInstance()
             .forNumberOfRows(1);
 
@@ -187,7 +191,7 @@ public class DBTableFixtureMySqlTest {
 
     @Test
     public void shouldInsertValuesForNullableColumnsIfDesired() {
-        //Insert 1 rows without specifying values of any column (all columns in the table are nullable)
+        //Insert a row with random/default values for all nullable columns
         InsertionCriteria insertionCriteria = InsertionCriteria.newInstance()
             .forNumberOfRows(1)
             .insertDefaultsForNullableColumns(true);
