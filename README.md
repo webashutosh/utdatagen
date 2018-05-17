@@ -2,7 +2,7 @@
 
 A very small java library to create test data for Unit Tests.
 
-### Steps -
+### Usage instructions -
 
 1) Create an instance of a DBTableFixture pointing to a single DB table
 2) Use the truncateTable() method on the instance to delete existing data (*optional*)
