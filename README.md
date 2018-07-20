@@ -2,6 +2,8 @@
 
 A very small java library to create test data for Unit Tests.
 
+[![Build Status](https://travis-ci.org/webashutosh/utdatagen.svg?branch=master)](https://travis-ci.org/webashutosh/utdatagen)
+
 ### Usage instructions -
 
 1) Create an instance of a DBTableFixture pointing to a single DB table

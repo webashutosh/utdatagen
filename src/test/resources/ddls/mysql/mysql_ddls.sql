@@ -1,5 +1,3 @@
-CREATE DATABASE `utdatagen_utdb` /*!40100 DEFAULT CHARACTER SET utf8 */;
-
 CREATE TABLE `utdatagen_utdb`.`test_table` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `varchar_column` VARCHAR(45) NULL,

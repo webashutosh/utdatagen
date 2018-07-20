@@ -1,1 +1,8 @@
 language: java
+
+services:
+- mysql
+
+before_install:
+- mysql -e 'CREATE DATABASE IF NOT EXISTS utdatagen_utdb;'
+- mysql -u root --default-character-set=utf8 utdatagen_utdb < src/test/resources/ddls.mysql/mysql_ddls.sql
